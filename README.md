@@ -56,7 +56,7 @@ CashController.php
 ```
 public function index()
 {
-    return view('acc.cash.index');
+    return view('cash.index');
 }
 ```
 
