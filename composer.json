@@ -1,0 +1,17 @@
+{
+    "name": "maras0830/laravel5-pay2go",
+    "description": "Laravel5 pay2go.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maras Chen",
+            "email": "j999444@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Maras0830\\Pay2Go\\": "src"
+        }
+    }
+}
