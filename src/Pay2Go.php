@@ -9,7 +9,7 @@ use Carbon\Carbon;
  */
 class Pay2Go
 {
-    use ValidatesRequests;
+    use OrderValidatesRequests;
 
     protected $CreditRed;
     protected $InstFlag;
@@ -80,6 +80,8 @@ class Pay2Go
     }
 
     /**
+     * 設置訂單
+     *
      * @param $order_id
      * @param $price
      * @param $descriptions
@@ -307,11 +309,11 @@ class Pay2Go
     }
 
     /**
-     * 取得 檢核碼
+     * 設置 檢核碼
      *
      * @return string
      */
-    private function getCheckValue()
+    public function setCheckValue()
     {
         $check_field = array(
             "Amt" => $this->Amt,
@@ -325,9 +327,43 @@ class Pay2Go
         $check_field_str = http_build_query($check_field);
         $checkValue = 'HashKey='.$this->HashKey . '&' . $check_field_str . '&HashIV=' . $this->HashIV;
 
-        return strtoupper(hash("sha256", $checkValue));
+        $this->CheckValue = strtoupper(hash("sha256", $checkValue));
     }
 
+    public function getHashKey()
+    {
+        return $this->HashKey;
+    }
+
+    public function getHashIV()
+    {
+        return $this->HashIV;
+    }
+
+    public function getMerchantID()
+    {
+        return $this->MerchantID;
+    }
+
+    public function getMerchantOrderNo()
+    {
+        return $this->MerchantOrderNo;
+    }
+
+    public function getResponseType()
+    {
+        return $this->RespondType;
+    }
+
+    public function getVersion()
+    {
+        return $this->Version;
+    }
+
+    public function getAmt()
+    {
+        return $this->Amt;
+    }
 
     /**
      * 送出訂單
@@ -336,8 +372,89 @@ class Pay2Go
      */
     public function submitOrder()
     {
-        $this->CheckValue = $this->getCheckValue();
+        $this->setCheckValue();
 
+        $result = $this->setOrderSubmitForm();
+
+        // 驗證欄位是否正確設置
+        $this->orderValidates();
+
+        return $result;
+    }
+
+    /**
+     * 信用卡請款
+     *
+     * @param $MerchantOrderNo
+     * @param $amt
+     * @return string
+     */
+    public function requestPaymentPay($MerchantOrderNo, $amt)
+    {
+        $this->setOrder($MerchantOrderNo, $amt, null, null);
+
+        $request_pay = new RequestCreditPay($this);
+
+        $request_pay->setRequestPayData()->setCreditRequestPayOrCloseByMerchantOrderNo('Pay');
+
+        $result = $this->setRequestPaymentForm($request_pay);
+
+        return $result;
+    }
+
+    /**
+     * 信用卡退款
+     *
+     * @param $MerchantOrderNo
+     * @param $amt
+     * @return string
+     */
+    public function requestPaymentClose($MerchantOrderNo, $amt)
+    {
+        $this->setOrder($MerchantOrderNo, $amt, null, null);
+
+        $request_pay = new RequestCreditPay($this);
+
+        $request_pay->setRequestPayData()->setCreditRequestPayOrCloseByMerchantOrderNo('Close');
+
+        $result = $this->setRequestPaymentForm($request_pay);
+
+        return $result;
+    }
+
+    /**
+     * 設置請款或退款的表單
+     *
+     * @param $request_pay
+     * @return string
+     */
+    private function setRequestPaymentForm($request_pay)
+    {
+        $result = '<form name="Pay2go" id="order_form" method="post" action='. $request_pay->getRequestCreditPayUrl(config('pay2go.Debug')) .'>';
+
+        foreach ($request_pay->getProperties() as $key => $value) {
+            if ($key != "pay2Go") {
+                if (is_array($value)) {
+                    foreach ($value as $sub_key => $sub_value)
+                        $result .= '<input type="hidden" name="' . $key . '["' . $sub_key . '"]" value="' . $sub_value . '">';
+                } else {
+                    $result .= '<input type="hidden" name="' . $key . '" value="' . $value . '">';
+                }
+            }
+        }
+
+        $result .= '</form><script type="text/javascript">document.getElementById(\'order_form\').submit();</script>';
+
+        return $result;
+    }
+
+    /**
+     * 設置訂單新增的表單
+     *
+     * @return string
+     */
+    private function setOrderSubmitForm()
+    {
         $result = '<form name="Pay2go" id="order_form" method="post" action='.$this->getPay2GoUrl().'>';
 
         foreach($this as $key => $value) {
@@ -346,8 +463,6 @@ class Pay2Go
         }
 
         $result .= '</form><script type="text/javascript">document.getElementById(\'order_form\').submit();</script>';
-
-        $this->validate();
 
         return $result;
     }

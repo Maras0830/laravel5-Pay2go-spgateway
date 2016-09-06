@@ -46,6 +46,7 @@ php artisan vendor:publish --force
 ```
 
 ## USAGE
+### MPG(Multi Payment Gateway) 單一串接多種支付 ###
 routes.php
 ```php
 Route::get('cash', 'CashController@index');
@@ -112,7 +113,43 @@ resources/views/cash/submit.blade.php
         </body>
     </html>
 ```
+### Payment Pay or Close (信用卡請款或退款) ###
+
+routes.php
+```php
+Route::get('admin/order', 'admin\OrderController@index');
+Route::get('admin/order/requestPay/{order_id}', 'admin\OrderController@requestPay');
+```
+
+Admin/OrderController.php
+```php
+    public function index()
+    {
+        $orders = $this->orderRepository->all()->get();
+
+        return view('admin.cash.index')->with(compact('orders'));
+    }
+```
+
+```php
+    public function requestPay($order_id)
+    {
+        $order = $this->orderRepository->findBy('order_unique_id', $order_id);
+
+        $pay2go = new Pay2Go(config('pay2go.MerchantID'), config('pay2go.HashKey'), config('pay2go.HashIV'));
+
+        $result = $pay2go->requestPaymentPay($order->order_unique_id, $order->amt);
+
+        return view('admin.cash.request_pay')->with(compact('result'));
+    }
+```
 
 ## FEATURE
-Only support add order, will add invoice feature and welcome developers join this project. 
+1. Support add order.
+2. Support credit payment pay or close.
+##
+
+## ChangeLog
+[2016.09.06] Support credit payment pay or close.   
+[2016.08.29] Only support add order, will add invoice feature and welcome developers join this project. 
 ##
