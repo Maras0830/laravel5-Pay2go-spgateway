@@ -2,9 +2,14 @@
 
 Cash trading with Pay2Go Package on Laravel 5.*
 
+## FEATURE
+1. Support add order.
+2. Support credit payment pay or close.
+
 ## Official Documentation
 
 Official Documentation for the Cash can be found on the [Pay2Go MPGapi_V1_1_8](https://www.pay2go.com/dw_files/info_api/pay2go_gateway_MPGapi_V1_1_8.pdf).
+
 
 ## Installation
 
@@ -143,11 +148,6 @@ Admin/OrderController.php
         return view('admin.cash.request_pay')->with(compact('result'));
     }
 ```
-
-## FEATURE
-1. Support add order.
-2. Support credit payment pay or close.
-##
 
 ## ChangeLog
 [2016.09.06] Support credit payment pay or close.   
