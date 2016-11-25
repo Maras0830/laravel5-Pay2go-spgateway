@@ -106,9 +106,9 @@ class Pay2Go
     public function setPay2GoUrl($debug_mode)
     {
         if ($debug_mode)
-            $this->Pay2GoUrl = 'https://capi.pay2go.com/MPG/mpg_gateway';
+            $this->Pay2GoUrl = 'https://ccore.spgateway.com/MPG/mpg_gateway';
         else
-            $this->Pay2GoUrl = 'https://api.pay2go.com/MPG/mpg_gateway';
+            $this->Pay2GoUrl = 'https://core.spgateway.com/MPG/mpg_gateway';
     }
 
     /**
