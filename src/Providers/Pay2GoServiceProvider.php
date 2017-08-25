@@ -13,10 +13,10 @@ class Pay2GoServiceProvider extends ServiceProvider  {
     {
         $this->app->singleton(Pay2Go::class, function($app) {
             $config = $app['config']['pay2go'];
-            
-            return new Pay2Go($config['MerchantID'], $config['HashKey'], $config['HashIV']));
+
+            return new Pay2Go($config['MerchantID'], $config['HashKey'], $config['HashIV']);
         });
-        
+
         $this->app->alias(Pay2Go::class, 'pay2go');
     }
 
