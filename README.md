@@ -2,6 +2,9 @@
 
 Cash trading with Pay2Go-Spagateway Package on Laravel 5.*
 
+## EXAMPLE
+[laravel5-Pay2Go-spgateway-example](https://github.com/Maras0830/laravel5-Pay2Go-spgateway-example)
+
 ## FEATURE
 1. Support add order.
 2. Support credit payment pay or close.
