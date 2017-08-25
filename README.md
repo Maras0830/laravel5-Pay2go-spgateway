@@ -1,6 +1,6 @@
-# Laravel5-Pay2Go
+# Laravel5-Pay2Go-spgateway
 
-Cash trading with Pay2Go Package on Laravel 5.*
+Cash trading with Pay2Go-Spagateway Package on Laravel 5.*
 
 ## FEATURE
 1. Support add order.
@@ -8,13 +8,19 @@ Cash trading with Pay2Go Package on Laravel 5.*
 
 ## Official Documentation
 
-Official Documentation for the Cash can be found on the [Pay2Go MPGapi_V1_1_8](https://www.pay2go.com/dw_files/info_api/pay2go_gateway_MPGapi_V1_1_8.pdf).
+Official Documentation for the Payment can be found on the [Spgateway_gateway MPGapi_V1_0_3](https://www.spgateway.com/dw_files/info_api/spgateway_gateway_MPGapi_V1_0_3.pdf).
 
 
 ## Installation
 
 ```bash
-"maras0830/laravel5-pay2go": "dev-master"
+"maras0830/laravel5-pay2go": "^1.0"
+```
+
+or
+
+```bash
+"composer require maras0830/laravel5-pay2go"
 ```
 
 In ```config/app.php``` add ```providers```
@@ -28,15 +34,18 @@ In ```config/app.php``` add ```aliases```
 
 In ```.env``` add, you can register on  
 
-[Pay2Go](https://www.pay2go.com/) or 
-[Pay2Go Test](https://cweb.pay2go.com/)    
+[Pay2Go](https://www.spgateway.com/) or 
+[Pay2Go Test](https://cwww.spgateway.com/)    
 
 
 ```bash
+CASH_STORE_DEBUG_MODE=false
 CASH_STORE_ID=xxxxxxxx
 CASH_STORE_HashKey=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 CASH_STORE_HashIV=xxxxxxxxxxxxxxxx
 ```
+
+#### Remember to change your APP_URL, spgateway deny localhost.
 
 default return url
 ```bash
@@ -150,7 +159,8 @@ Admin/OrderController.php
 ```
 
 ## ChangeLog
+[2017.08.25] Add Debug Mode On .env.
+[2016.11.25] Change API URL to spgateway.com.
 [2016.09.06] Support credit payment pay or close.   
 [2016.08.29] Only support add order, will add invoice feature and welcome developers join this project.
-[2016.11.25] Change API URL to spgateway.com.
 ##

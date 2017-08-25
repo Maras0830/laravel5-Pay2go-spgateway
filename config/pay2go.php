@@ -2,7 +2,7 @@
 
 return [
 
-    'Debug' => true,
+    'Debug' => env('CASH_STORE_DEBUG_MODE'),
 
     /*
      * 智付寶商店代號
