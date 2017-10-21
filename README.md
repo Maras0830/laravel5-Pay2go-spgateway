@@ -59,7 +59,7 @@ CASH_Client_BackUrl=/order/cancel
 
 Publish config.
 ```php
-php artisan vendor:publish --force
+php artisan vendor:publish
 ```
 
 ## USAGE
