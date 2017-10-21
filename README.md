@@ -162,8 +162,8 @@ Admin/OrderController.php
 ```
 
 ## ChangeLog
-[2017.08.25] Add Debug Mode On .env.
-[2016.11.25] Change API URL to spgateway.com.
-[2016.09.06] Support credit payment pay or close.   
-[2016.08.29] Only support add order, will add invoice feature and welcome developers join this project.
+[2017.08.25] Add Debug Mode On .env.  
+[2016.11.25] Change API URL to spgateway.com. 
+[2016.09.06] Support credit payment pay or close.     
+[2016.08.29] Only support add order, will add invoice feature and welcome developers join this project.  
 ##
