@@ -1,6 +1,5 @@
 <?php
-
-namespace Maras0830\Pay2Go;
+namespace Maras0830\Pay2Go\Validation;
 
 use Maras0830\Pay2Go\Exceptions\TradeException;
 

@@ -2,6 +2,7 @@
 namespace Maras0830\Pay2Go;
 
 use Carbon\Carbon;
+use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
 
 /**
  * Class Pay2Go
