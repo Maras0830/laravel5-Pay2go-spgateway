@@ -459,7 +459,8 @@ class Pay2Go
         $result = '<form name="Pay2go" id="order_form" method="post" action='.$this->getPay2GoUrl().'>';
 
         foreach($this as $key => $value) {
-            if ($key != 'Pay2GoUrl' and !is_null($value) and count($value) != 0)
+            $count = is_array($value) ? count($value) : 1;
+            if ($key != 'Pay2GoUrl' and !is_null($value) and $count)
                 $result .= '<input type="hidden" name="'. $key .'" value="' . $value . '">';
         }
 
