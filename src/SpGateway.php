@@ -6,46 +6,53 @@ use Illuminate\Support\Facades\Config;
 use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
 
 /**
- * Class Pay2Go
+ * Class SpGateway
  * @package Maras0830\Pay2Go
  */
-class Pay2Go
+class SpGateway
 {
     use OrderValidatesRequests;
+    protected $Pay2GoUrl;
 
-    protected $CreditRed;
-    protected $InstFlag;
-    private $CheckValue;
     private $MerchantID;
+    private $TradeInfo;
+    private $TradeSha;
+
+    protected $RespondType;
+    protected $TimeStamp;
+
     private $HashKey;
     private $HashIV;
-
-    protected $Pay2GoUrl;
     protected $Version;
+    protected $LangType;
+    protected $MerchantOrderNo;
+    protected $Amt;
+    protected $ItemDesc;
+    protected $TradeLimit;
+    protected $ExpireDate;
+    protected $ReturnURL;
+    protected $NotifyURL;
+    protected $CustomerURL;
+    protected $ClientBackURL;
+    protected $Email;
+    protected $EmailModify;
+    protected $LoginType;
+    protected $OrderComment;
+
     protected $CREDIT;
-    protected $TimeStamp;
+    protected $ANDROIDPAY;
+    protected $SAMSUNGPAY;
+
+    protected $InstFlag;
+
+    protected $CreditRed;
     protected $UNIONPAY;
     protected $WEBATM;
     protected $VACC;
-    protected $BARCODE;
     protected $CVS;
-    protected $CUSTOM;
-    protected $LangType;
-    protected $RespondType;
-    protected $TradeLimit;
-    protected $ExpireDate;
-    protected $ExpireTime;
-    protected $OrderComment;
-    protected $LoginType;
-    protected $EmailModify;
-    protected $ClientBackURL;
-    protected $CustomerURL;
-    protected $NotifyURL;
-    protected $ReturnURL;
-    protected $MerchantOrderNo;
-    protected $ItemDesc;
-    protected $Email;
-    protected $Amt;
+    protected $BARCODE;
+    protected $P2G;
+    protected $CVSCOM;
 
     /**
      * Pay2Go constructor.
@@ -60,12 +67,12 @@ class Pay2Go
         $this->HashIV = ($HashIV != null ? $HashIV : Config::get('pay2go.HashIV'));
 
         $this->setPay2GoUrl(Config::get('pay2go.Debug', true));
+        $this->setRespondType(Config::get('pay2go.RespondType', 'JSON'));
+
         $this->setExpireDate(Config::get('pay2go.ExpireDays', 7));
-        $this->setExpireTime(Config::get('pay2go.ExpireTime', 235959));
         $this->setLoginType(Config::get('pay2go.LoginType', false));
         $this->setVersion(Config::get('pay2go.Version', '1.4'));
         $this->setLangType(Config::get('pay2go.LangType', 'zh-tw'));
-        $this->setRespondType(Config::get('pay2go.RespondType', 'json'));
         $this->setEmailModify(Config::get('pay2go.EmailModify', false));
         $this->setPaymentMethod(Config::get('pay2go.paymentMethod', $this->getDefaultPaymentMethod()));
         $this->setTradeLimit(Config::get('pay2go.TradeLimit', null));
@@ -76,9 +83,6 @@ class Pay2Go
         $this->setReturnURL(Config::get('pay2go.ReturnURL', null));
 
         $this->setTimeStamp();
-        $this->MerchantID = $MerchantID;
-        $this->HashKey = $HashKey;
-        $this->HashIV = $HashIV;
     }
 
     /**
@@ -98,21 +102,6 @@ class Pay2Go
         $this->Email = $email;
 
         return $this;
-    }
-
-    /**
-     * 定期定額扣款
-     *
-     * @param $per_price
-     * @param string $type
-     * @param int $check_point
-     * @param int $period_times
-     * @param int $first_authorization_type
-     * @param string $memo
-     */
-    public function setPeriod($per_price, $type = 'Month', $check_point = 1, $period_times = 999, $first_authorization_type = 2, $memo = '')
-    {
-
     }
 
     /**
@@ -197,16 +186,6 @@ class Pay2Go
     public function setExpireDate($expireDays = 7)
     {
         $this->ExpireDate = date('Ymd',strtotime(Carbon::today()->addDay($expireDays)));
-    }
-
-    /**
-     * 設定過期時間
-     *
-     * @param string $expireTime
-     */
-    public function setExpireTime($expireTime = '235959')
-    {
-        $this->ExpireTime = $expireTime;
     }
 
     /**
@@ -325,26 +304,102 @@ class Pay2Go
         return $this->Pay2GoUrl;
     }
 
-    /**
-     * 設置 檢核碼
-     *
-     * @return string
-     */
-    public function setCheckValue()
+    public function encryptDataByAES()
     {
-        $check_field = array(
-            "Amt" => $this->Amt,
-            "MerchantID" => $this->MerchantID,
-            "MerchantOrderNo" => $this->MerchantOrderNo,
-            "TimeStamp" => $this->TimeStamp,
-            "Version" => $this->Version
-        );
+        $parameter = [
+            'MerchantID' =>  $this->MerchantID,
+            'RespondType' => $this->RespondType,
+            'TimeStamp' => $this->TimeStamp,
+            'Version' => $this->Version,
+            'MerchantOrderNo' =>  $this->MerchantOrderNo,
+            'Amt' => $this->Amt,
+            'ItemDesc' => 'UnitTest'
+        ];
 
-        ksort($check_field);
-        $check_field_str = http_build_query($check_field);
-        $checkValue = 'HashKey='.$this->HashKey . '&' . $check_field_str . '&HashIV=' . $this->HashIV;
+        $parameter = [
+            'RespondType' => $this->RespondType,
+            'TimeStamp' => 1400137200,
+            'Version' => '1.0',
+        ];
 
-        $this->CheckValue = strtoupper(hash("sha256", $checkValue));
+        $this->create_mpg_aes_encrypt($parameter);
+
+        $this->TradeInfo = trim(bin2hex(openssl_encrypt(
+            $this->addpadding(http_build_query($parameter)),
+            'aes-256-cbc',
+            $this->HashKey,
+            OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING,
+            $this->HashIV
+        )));
+    }
+
+
+    public function encryptDataByAES_()
+    {
+        $parameter = [
+            'RespondType' => $this->RespondType,
+            'TimeStamp' => $this->TimeStamp,
+            'Version' => '1.0',
+        ];
+
+        $this->create_mpg_aes_encrypt($parameter);
+
+        $this->TradeInfo = trim(bin2hex(openssl_encrypt(
+            $this->addpadding(http_build_query($parameter)),
+            'aes-256-cbc',
+            $this->HashKey,
+            OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING,
+            $this->HashIV
+        )));
+    }
+
+
+    function create_mpg_aes_encrypt ($parameter = "")
+    {
+        $return_str = '';
+
+        if (!empty($parameter)) {
+            //將參數經過 URL ENCODED QUERY STRING
+            $return_str = http_build_query($parameter);
+        }
+
+        return trim(bin2hex(openssl_encrypt($this->addpadding($return_str), 'aes-256-cbc', $this->getHashKey(), OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->getHashIV())));
+    }
+
+    public function create_aes_decrypt($parameter = "")
+    {
+
+        return $this->strippadding(openssl_decrypt(hex2bin($parameter),'AES-256-CBC', $this->getHashKey(), OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->getHashIV()));
+    }
+
+    public  function strippadding($string)
+    {
+        $slast = ord(substr($string, -1));
+
+        $slastc = chr($slast);
+
+        $pcheck = substr($string, -$slast);
+
+        if (preg_match("/$slastc{" . $slast . "}/", $string)) {
+            $string = substr($string, 0, strlen($string) - $slast);
+
+            return $string;
+        }
+
+        return false;
+    }
+
+    public function encryptDataBySHA256()
+    {
+        $this->TradeSha = strtoupper(hash("sha256", 'HashKey='.$this->HashKey . '&' . $this->TradeInfo . '&HashIV=' . $this->HashIV));
+    }
+
+    public function addpadding($string, $blocksize = 32)
+    {
+        $len = strlen($string);
+        $pad = $blocksize - ($len % $blocksize);
+        $string .= str_repeat(chr($pad), $pad);
+        return $string;
     }
 
     public function getHashKey()
@@ -390,11 +445,14 @@ class Pay2Go
      */
     public function submitOrder()
     {
-        $this->setCheckValue();
+        $this->encryptDataByAES();
 
+        $this->encryptDataBySHA256();
+
+//        dd($this);
         $result = $this->setOrderSubmitForm();
 
-        dd($result);
+//        dd($result);
 
         // 驗證欄位是否正確設置
         $this->orderValidates();
@@ -477,12 +535,10 @@ class Pay2Go
     {
         $result = '<form name="Pay2go" id="order_form" method="post" action='.$this->getPay2GoUrl().'>';
 
-        dd($this);
-        foreach($this as $key => $value) {
-            $count = is_array($value) ? count($value) : 1;
-            if ($key != 'Pay2GoUrl' and !is_null($value) and $count)
-                $result .= '<input type="hidden" name="'. $key .'" value="' . $value . '">';
-        }
+        $result .= '<input type="hidden" name="MerchantID" value="'. $this->MerchantID .'">';
+        $result .= '<input type="hidden" name="TradeInfo" value="'. $this->TradeInfo .'">';
+        $result .= '<input type="hidden" name="TradeSha" value="'. $this->TradeSha .'">';
+        $result .= '<input type="hidden" name="Version" value="'. $this->Version .'">';
 
         $result .= '</form><script type="text/javascript">document.getElementById(\'order_form\').submit();</script>';
 
@@ -513,14 +569,14 @@ class Pay2Go
                 'CreditRed' => false,
                 'InstFlag' => 0,
             ],
+            'ANDROIDPAY' => false,
+            'SAMSUNGPAY' => false,
             'UNIONPAY' => false,
             'WEBATM' => false,
             'VACC' => false,
             'CVS' => false,
             'BARCODE' => false,
-
-
-            'PERIODIC' => true,
+            'P2G' => false,
         ];
     }
 

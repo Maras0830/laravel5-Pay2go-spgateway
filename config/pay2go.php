@@ -147,12 +147,14 @@ return [
             'CreditRed' => false,
             'InstFlag' => 0,
         ],
-
         'UNIONPAY' => false,
         'WEBATM' => true,
         'VACC' => true,
         'CVS' => true,
         'BARCODE' => true,
+
+
+        'PERIODIC' => false,
     ],
 
     /*

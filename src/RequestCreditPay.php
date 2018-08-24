@@ -55,9 +55,9 @@ class RequestCreditPay
         $this->PostData_['CloseType'] = $CloseType == 'Pay' ? 1 : 2;
 
         $post_data_str = http_build_query($this->PostData_);
-
-        $this->PostData_ = trim(bin2hex(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->pay2Go->getHashKey(),
-            $this->addPadding($post_data_str), MCRYPT_MODE_CBC, $this->pay2Go->getHashIV())));
+        $this->PostData_ = openssl_encrypt($this->addPadding($post_data_str), 'AES-256-CBC', $this->pay2Go->getHashKey(), OPENSSL_RAW_DATA, $this->pay2Go->getHashIV());
+//        $this->PostData_ = trim(bin2hex(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->pay2Go->getHashKey(),
+//            $this->addPadding($post_data_str), MCRYPT_MODE_CBC, $this->pay2Go->getHashIV())));
 
         return $this;
     }
