@@ -1,5 +1,6 @@
 <?php
 namespace Maras0830\Pay2Go\Services;
+use Illuminate\Support\Facades\Config;
 use Maras0830\Pay2Go\Pay2Go;
 
 /**
@@ -11,6 +12,8 @@ use Maras0830\Pay2Go\Pay2Go;
 
 class Pay2GoService
 {
+    private $pay2go;
+
     /**
      * Pay2GoService constructor.
      * @param null $MerchantID
@@ -19,7 +22,7 @@ class Pay2GoService
      */
     public function __construct($MerchantID = null, $HashKey = null, $HashIV = null)
     {
-        $this->pay2go = new Pay2Go(config('pay2go.MerchantID'), config('pay2go.HashKey'), config('pay2go.HashIV'));
+        $this->pay2go = new Pay2Go(Config::get('pay2go.MerchantID'), Config::get('pay2go.HashKey'), Config::get('pay2go.HashIV'));
     }
 
     /**

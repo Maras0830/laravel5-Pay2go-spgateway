@@ -1,6 +1,7 @@
 {
     "name": "maras0830/laravel5-pay2go",
     "description": "Laravel5 pay2go.",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -8,7 +9,10 @@
             "email": "j999444@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "^5.1.0"
+    },
     "prefer-stable": true,
     "autoload": {
         "psr-4": {

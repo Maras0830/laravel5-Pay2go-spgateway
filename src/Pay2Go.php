@@ -2,6 +2,7 @@
 namespace Maras0830\Pay2Go;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
 
 /**
@@ -54,25 +55,25 @@ class Pay2Go
      */
     public function __construct($MerchantID = null, $HashKey = null, $HashIV = null)
     {
-        $this->MerchantID = ($MerchantID != null ? $MerchantID : config('pay2go.MerchantID'));
-        $this->HashKey = ($HashKey != null ? $HashKey : config('pay2go.HashKey'));
-        $this->HashIV = ($HashIV != null ? $HashIV : config('pay2go.HashIV'));
+        $this->MerchantID = ($MerchantID != null ? $MerchantID : Config::get('pay2go.MerchantID'));
+        $this->HashKey = ($HashKey != null ? $HashKey : Config::get('pay2go.HashKey'));
+        $this->HashIV = ($HashIV != null ? $HashIV : Config::get('pay2go.HashIV'));
 
-        $this->setPay2GoUrl(config('pay2go.Debug'));
-        $this->setExpireDate(config('pay2go.ExpireDays'));
-        $this->setExpireTime(config('pay2go.ExpireTime'));
-        $this->setLoginType(config('pay2go.LoginType'));
-        $this->setVersion(config('pay2go.Version'));
-        $this->setLangType(config('pay2go.LangType'));
-        $this->setRespondType(config('pay2go.RespondType'));
-        $this->setEmailModify(config('pay2go.EmailModify'));
-        $this->setPaymentMethod(config('pay2go.paymentMethod'));
-        $this->setTradeLimit(config('pay2go.TradeLimit'));
-        $this->setOrderComment(config('pay2go.OrderComment'));
-        $this->setClientBackURL(config('pay2go.ClientBackURL'));
-        $this->setCustomerURL(config('pay2go.CustomerURL'));
-        $this->setNotifyURL(config('pay2go.NotifyURL'));
-        $this->setReturnURL(config('pay2go.ReturnURL'));
+        $this->setPay2GoUrl(Config::get('pay2go.Debug'));
+        $this->setExpireDate(Config::get('pay2go.ExpireDays'));
+        $this->setExpireTime(Config::get('pay2go.ExpireTime'));
+        $this->setLoginType(Config::get('pay2go.LoginType'));
+        $this->setVersion(Config::get('pay2go.Version'));
+        $this->setLangType(Config::get('pay2go.LangType'));
+        $this->setRespondType(Config::get('pay2go.RespondType'));
+        $this->setEmailModify(Config::get('pay2go.EmailModify'));
+        $this->setPaymentMethod(Config::get('pay2go.paymentMethod'));
+        $this->setTradeLimit(Config::get('pay2go.TradeLimit'));
+        $this->setOrderComment(Config::get('pay2go.OrderComment'));
+        $this->setClientBackURL(Config::get('pay2go.ClientBackURL'));
+        $this->setCustomerURL(Config::get('pay2go.CustomerURL'));
+        $this->setNotifyURL(Config::get('pay2go.NotifyURL'));
+        $this->setReturnURL(Config::get('pay2go.ReturnURL'));
 
         $this->setTimeStamp();
         $this->MerchantID = $MerchantID;
@@ -370,6 +371,7 @@ class Pay2Go
      * 送出訂單
      *
      * @return string
+     * @throws Exceptions\TradeException
      */
     public function submitOrder()
     {
@@ -431,7 +433,7 @@ class Pay2Go
      */
     private function setRequestPaymentForm($request_pay)
     {
-        $result = '<form name="Pay2go" id="order_form" method="post" action='. $request_pay->getRequestCreditPayUrl(config('pay2go.Debug')) .'>';
+        $result = '<form name="Pay2go" id="order_form" method="post" action='. $request_pay->getRequestCreditPayUrl(Config::get('pay2go.Debug')) .'>';
 
         foreach ($request_pay->getProperties() as $key => $value) {
             if ($key != "pay2Go") {
