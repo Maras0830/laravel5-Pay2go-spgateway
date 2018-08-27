@@ -3,6 +3,7 @@ namespace Maras0830\Pay2Go;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Maras0830\Pay2Go\Traits\EncryptTrait;
 use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
 
 /**
@@ -11,7 +12,8 @@ use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
  */
 class SpGateway
 {
-    use OrderValidatesRequests;
+    use OrderValidatesRequests, EncryptTrait;
+
     protected $Pay2GoUrl;
 
     private $MerchantID;
@@ -304,104 +306,6 @@ class SpGateway
         return $this->Pay2GoUrl;
     }
 
-    public function encryptDataByAES()
-    {
-        $parameter = [
-            'MerchantID' =>  $this->MerchantID,
-            'RespondType' => $this->RespondType,
-            'TimeStamp' => $this->TimeStamp,
-            'Version' => $this->Version,
-            'MerchantOrderNo' =>  $this->MerchantOrderNo,
-            'Amt' => $this->Amt,
-            'ItemDesc' => 'UnitTest'
-        ];
-
-        $parameter = [
-            'RespondType' => $this->RespondType,
-            'TimeStamp' => 1400137200,
-            'Version' => '1.0',
-        ];
-
-        $this->create_mpg_aes_encrypt($parameter);
-
-        $this->TradeInfo = trim(bin2hex(openssl_encrypt(
-            $this->addpadding(http_build_query($parameter)),
-            'aes-256-cbc',
-            $this->HashKey,
-            OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING,
-            $this->HashIV
-        )));
-    }
-
-
-    public function encryptDataByAES_()
-    {
-        $parameter = [
-            'RespondType' => $this->RespondType,
-            'TimeStamp' => $this->TimeStamp,
-            'Version' => '1.0',
-        ];
-
-        $this->create_mpg_aes_encrypt($parameter);
-
-        $this->TradeInfo = trim(bin2hex(openssl_encrypt(
-            $this->addpadding(http_build_query($parameter)),
-            'aes-256-cbc',
-            $this->HashKey,
-            OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING,
-            $this->HashIV
-        )));
-    }
-
-
-    function create_mpg_aes_encrypt ($parameter = "")
-    {
-        $return_str = '';
-
-        if (!empty($parameter)) {
-            //將參數經過 URL ENCODED QUERY STRING
-            $return_str = http_build_query($parameter);
-        }
-
-        return trim(bin2hex(openssl_encrypt($this->addpadding($return_str), 'aes-256-cbc', $this->getHashKey(), OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->getHashIV())));
-    }
-
-    public function create_aes_decrypt($parameter = "")
-    {
-
-        return $this->strippadding(openssl_decrypt(hex2bin($parameter),'AES-256-CBC', $this->getHashKey(), OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->getHashIV()));
-    }
-
-    public  function strippadding($string)
-    {
-        $slast = ord(substr($string, -1));
-
-        $slastc = chr($slast);
-
-        $pcheck = substr($string, -$slast);
-
-        if (preg_match("/$slastc{" . $slast . "}/", $string)) {
-            $string = substr($string, 0, strlen($string) - $slast);
-
-            return $string;
-        }
-
-        return false;
-    }
-
-    public function encryptDataBySHA256()
-    {
-        $this->TradeSha = strtoupper(hash("sha256", 'HashKey='.$this->HashKey . '&' . $this->TradeInfo . '&HashIV=' . $this->HashIV));
-    }
-
-    public function addpadding($string, $blocksize = 32)
-    {
-        $len = strlen($string);
-        $pad = $blocksize - ($len % $blocksize);
-        $string .= str_repeat(chr($pad), $pad);
-        return $string;
-    }
-
     public function getHashKey()
     {
         return $this->HashKey;
@@ -445,16 +349,24 @@ class SpGateway
      */
     public function submitOrder()
     {
-        $this->encryptDataByAES();
+        $parameter = [
+            'MerchantID' =>  $this->MerchantID,
+            'RespondType' => $this->RespondType,
+            'TimeStamp' => $this->TimeStamp,
+            'Version' => $this->Version,
+            'MerchantOrderNo' =>  $this->MerchantOrderNo,
+            'Amt' => $this->Amt,
+            'ItemDesc' => $this->ItemDesc,
+            'NotifyURL' => $this->NotifyURL
+        ];
+
+        $this->encryptDataByAES($parameter);
 
         $this->encryptDataBySHA256();
 
-//        dd($this);
         $result = $this->setOrderSubmitForm();
 
-//        dd($result);
 
-        // 驗證欄位是否正確設置
         $this->orderValidates();
 
         return $result;
@@ -579,5 +491,4 @@ class SpGateway
             'P2G' => false,
         ];
     }
-
 }

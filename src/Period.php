@@ -3,6 +3,7 @@ namespace Maras0830\Pay2Go;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Maras0830\Pay2Go\Traits\EncryptTrait;
 use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
 
 /**
@@ -11,7 +12,8 @@ use Maras0830\Pay2Go\Validation\OrderValidatesRequests;
  */
 class Period
 {
-    use OrderValidatesRequests;
+    use OrderValidatesRequests, EncryptTrait;
+
     protected $Pay2GoUrl;
 
     private $MerchantID;
@@ -51,12 +53,14 @@ class Period
     public function __construct($MerchantID = null, $HashKey = null, $HashIV = null)
     {
         $this->setPay2GoPeriodUrl(Config::get('pay2go.Debug', true));
+
         $this->MerchantID = ($MerchantID != null ? $MerchantID : Config::get('pay2go.MerchantID'));
         $this->HashKey = ($HashKey != null ? $HashKey : Config::get('pay2go.HashKey'));
         $this->HashIV = ($HashIV != null ? $HashIV : Config::get('pay2go.HashIV'));
+
         $this->setRespondType(Config::get('pay2go.RespondType', 'JSON'));
         $this->setTimeStamp();
-        $this->setVersion(Config::get('pay2go.VersionPeriod', '1.0'));
+        $this->setVersion(Config::get('pay2go.Period.Version', '1.0'));
 
         $this->setEmailModify(Config::get('pay2go.EmailModify', false));
 
@@ -66,7 +70,7 @@ class Period
         $this->setReturnURL(Config::get('pay2go.ReturnURL', null));
         $this->setClientBackURL(Config::get('pay2go.ClientBackURL', null));
         $this->setNotifyURL(Config::get('pay2go.NotifyURL', null));
-
+//        $this->setNotifyURL('https://requestbin.fullcontact.com/1klchpq1');
     }
 
     /**
@@ -77,7 +81,7 @@ class Period
      * @param string $description
      * @param $per_price
      * @param string $type
-     * @param int $check_point
+     * @param string $check_point
      * @param int $period_times
      * @param int $first_authorization_type
      * @param string $memo
@@ -202,7 +206,12 @@ class Period
         return $this->Pay2GoUrl;
     }
 
-    public function encryptDataByAES()
+    /**
+     * 送出
+     *
+     * @return string
+     */
+    public function submit()
     {
         $parameter = [
             'RespondType' => $this->RespondType,
@@ -225,44 +234,9 @@ class Period
             'BackURL' => $this->BackURL,
         ];
 
-        $this->create_mpg_aes_encrypt($parameter);
+        $this->encryptDataByAES($parameter);
 
-        $this->PostData_ = trim(bin2hex(openssl_encrypt(
-            $this->addPadding(http_build_query($parameter)),
-            'aes-256-cbc',
-            $this->HashKey,
-            OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING,
-            $this->HashIV
-        )));
-
-    }
-
-    function create_mpg_aes_encrypt($parameter = "")
-    {
-        $return_str = '';
-
-        if (!empty($parameter)) {
-            //將參數經過 URL ENCODED QUERY STRING
-            $return_str = http_build_query($parameter);
-        }
-
-        return trim(bin2hex(openssl_encrypt($this->addpadding($return_str), 'aes-256-cbc', $this->getHashKey(), OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->getHashIV())));
-    }
-
-    public function create_aes_decrypt($parameter = "")
-    {
-
-        return $this->stripPadding(openssl_decrypt(hex2bin($parameter),'AES-256-CBC', $this->getHashKey(), OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->getHashIV()));
-    }
-
-    /**
-     * 送出
-     *
-     * @return string
-     */
-    public function submit()
-    {
-        $this->encryptDataByAES();
+//        dd($this->PostData_);
 
         $result = $this->setOrderSubmitForm();
 
@@ -288,61 +262,43 @@ class Period
         return $result;
     }
 
+    /**
+     * @param $enable_payment_info
+     */
     private function setPaymentInfo($enable_payment_info)
     {
         $this->PaymentInfo = $enable_payment_info ? 'Y' : 'N';
     }
 
+    /**
+     * @param $enable_order_info
+     */
     private function setOrderInfo($enable_order_info)
     {
         $this->OrderInfo = $enable_order_info ? 'Y' : 'N';
     }
 
-    private function getHashKey()
-    {
-        return $this->HashKey;
-    }
-
-    private function getHashIV()
-    {
-        return $this->HashIV;
-    }
-
+    /**
+     * @return mixed|null
+     */
     public function getMerchantID()
     {
         return $this->MerchantID;
     }
 
+    /**
+     * @return mixed
+     */
     public function getResponseType()
     {
         return $this->RespondType;
     }
 
+    /**
+     * @return mixed
+     */
     public function getVersion()
     {
         return $this->Version;
-    }
-
-    public function stripPadding($string)
-    {
-        $slast = ord(substr($string, -1));
-
-        $slastc = chr($slast);
-
-        if (preg_match("/$slastc{" . $slast . "}/", $string)) {
-            $string = substr($string, 0, strlen($string) - $slast);
-
-            return $string;
-        }
-
-        return false;
-    }
-
-    public function addPadding($string, $blocksize = 32)
-    {
-        $len = strlen($string);
-        $pad = $blocksize - ($len % $blocksize);
-        $string .= str_repeat(chr($pad), $pad);
-        return $string;
     }
 }
