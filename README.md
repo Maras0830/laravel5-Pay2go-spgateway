@@ -13,6 +13,12 @@ Cash trading with Pay2Go-Spagateway Package on Laravel 5.*
 
 Official Documentation for the Payment can be found on the [Spgateway_gateway MPGapi_V1_0_3](https://www.spgateway.com/dw_files/info_api/spgateway_gateway_MPGapi_V1_0_3.pdf).
 
+## Version
+
+Version | spgateway(智付通版本) | Period 定期定額
+------- | -------------------  | --------------
+1.0.* | 1.2 |
+2.0.* | 1.4 | Support(v)
 
 ## Installation
 
