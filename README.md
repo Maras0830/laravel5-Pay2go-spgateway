@@ -29,7 +29,7 @@ Version | spgateway(智付通版本) | Period 定期定額
 or
 
 ```bash
-"composer require maras0830/laravel5-pay2go"
+$ composer require maras0830/laravel5-pay2go
 ```
 
 In ```config/app.php``` add ```providers```
