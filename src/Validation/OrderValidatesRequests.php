@@ -15,7 +15,7 @@ trait OrderValidatesRequests
     public function orderValidates()
     {
         $required = ['MerchantID', 'RespondType',
-                    'TradeInfo', 'TradeSha', 'TimeStamp',
+                    'TimeStamp',
                     'Version', 'MerchantOrderNo',
                     'Amt', 'ItemDesc',
                     'Email', 'LoginType'];

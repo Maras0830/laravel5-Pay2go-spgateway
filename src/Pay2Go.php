@@ -394,8 +394,6 @@ class Pay2Go
 
         $result = $this->setOrderSubmitForm();
 
-        dd($result);
-
         // 驗證欄位是否正確設置
         $this->orderValidates();
 
@@ -477,7 +475,6 @@ class Pay2Go
     {
         $result = '<form name="Pay2go" id="order_form" method="post" action='.$this->getPay2GoUrl().'>';
 
-        dd($this);
         foreach($this as $key => $value) {
             $count = is_array($value) ? count($value) : 1;
             if ($key != 'Pay2GoUrl' and !is_null($value) and $count)
